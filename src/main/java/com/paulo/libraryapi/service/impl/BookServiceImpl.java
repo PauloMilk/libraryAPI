@@ -6,6 +6,8 @@ import com.paulo.libraryapi.service.BookService;
 import com.paulo.libraryapi.model.entity.Book;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class BookServiceImpl implements BookService {
 
@@ -21,5 +23,20 @@ public class BookServiceImpl implements BookService {
             throw  new BussinessException("Isbn já cadastrado.");
         }
         return repository.save(book);
+    }
+
+    @Override
+    public Optional<Book> getById(Long id) {
+        return Optional.empty();
+    }
+
+    @Override
+    public void delete(Book book) {
+
+    }
+
+    @Override
+    public Book update(Book book) {
+        return null;
     }
 }

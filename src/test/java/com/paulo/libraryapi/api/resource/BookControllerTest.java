@@ -2,13 +2,14 @@ package com.paulo.libraryapi.api.resource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.paulo.libraryapi.api.dto.BookDTO;
-import com.paulo.libraryapi.service.BookService;
 import com.paulo.libraryapi.exception.BussinessException;
 import com.paulo.libraryapi.model.entity.Book;
+import com.paulo.libraryapi.service.BookService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.BDDMockito;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -21,8 +22,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.util.Optional;
+
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -102,7 +106,118 @@ public class BookControllerTest {
 
     }
 
+    @Test
+    @DisplayName("Deve obter detalhes de um livro.")
+    public void getBookDetailsTest() throws Exception {
+
+        Long id = 1l;
+        Book book = Book.builder()
+                    .id(id)
+                    .title(createNewBook().getTitle())
+                    .isbn(createNewBook().getIsbn())
+                    .author(createNewBook().getAuthor())
+                    .build();
+        BDDMockito.given(service.getById(id)).willReturn(Optional.of(book));
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get(BOOK_API.concat("/" + id))
+                .accept(MediaType.APPLICATION_JSON);
+
+        mvc
+                .perform(request)
+                .andExpect(status().isOk())
+                .andExpect( jsonPath("id").value(id))
+                .andExpect( jsonPath("title").value(createNewBook().getTitle()))
+                .andExpect( jsonPath("author").value(createNewBook().getAuthor()))
+                .andExpect( jsonPath("isbn").value(createNewBook().getIsbn()));
+    }
+
+    @Test
+    @DisplayName("Deve retornar ResourceNotFoundException quando o livro procurado nao existir.")
+    public void bookNotFoundTest() throws Exception {
+        BDDMockito.given(service.getById(Mockito.anyLong())).willReturn(Optional.empty());
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get(BOOK_API.concat("/1"))
+                .accept(MediaType.APPLICATION_JSON);
+        mvc
+                .perform(request)
+                .andExpect(status().isNotFound());
+    }
+
     private BookDTO createNewBook() {
         return BookDTO.builder().author("Artur").title("As aventuras").isbn("001").build();
+    }
+
+    @Test
+    @DisplayName("Deve remover um livro.")
+    public void deleteBookTest() throws Exception {
+        BDDMockito.given(service.getById(Mockito.anyLong())).willReturn(Optional.of(Book.builder().id(1l).build()));
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .delete(BOOK_API.concat("/1"))
+                .accept(MediaType.APPLICATION_JSON);
+
+        mvc.perform(request)
+                .andExpect(status().isNoContent());
+
+    }
+
+    @Test
+    @DisplayName("Deve retornar resource not found quando nao encontrar um livro para remover.")
+    public void deleteBookNotFoundTest() throws Exception {
+        BDDMockito.given(service.getById(Mockito.anyLong())).willReturn(Optional.empty());
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .delete(BOOK_API.concat("/1"))
+                .accept(MediaType.APPLICATION_JSON);
+
+        mvc.perform(request)
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Deve atualizar um livro.")
+    public void updateBookTest() throws Exception{
+        Long id = 1l;
+        String json = new ObjectMapper().writeValueAsString(createNewBook());
+
+        Book bookSaved = Book.builder().id(1l).title("Titulo").author("autor").build();
+        BDDMockito.given(service.getById(id)).willReturn(Optional.of(bookSaved));
+        Book updatedBook = Book.builder().id(id).author("Artur").title("As aventuras").isbn("001").build();
+        BDDMockito.given(service.update(bookSaved)).willReturn(updatedBook);
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .put(BOOK_API.concat("/"+ id))
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        mvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect( jsonPath("id").value(id))
+                .andExpect( jsonPath("title").value(bookSaved.getTitle()))
+                .andExpect( jsonPath("author").value(bookSaved.getAuthor()))
+                .andExpect( jsonPath("isbn").value(updatedBook.getIsbn()));
+
+    }
+
+    @Test
+    @DisplayName("Deve retornar not found ao atualizar um livro que nao existe.")
+    public void updateBookNotFoundTest() throws Exception{
+        Long id = 1l;
+
+        Book bookSaved = Book.builder().id(1l).title("Titulo").author("autor").isbn("1233").build();
+        String json = new ObjectMapper().writeValueAsString(bookSaved);
+        BDDMockito.given(service.getById(id)).willReturn(Optional.empty());
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .put(BOOK_API.concat("/"+ id))
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        mvc.perform(request)
+                .andExpect(status().isNotFound());
     }
 }
