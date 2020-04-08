@@ -3,6 +3,7 @@ package com.paulo.libraryapi.api.exception;
 import com.paulo.libraryapi.exception.BussinessException;
 import org.springframework.boot.context.properties.bind.BindResult;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,6 +19,10 @@ public class ApiErrors {
 
     public ApiErrors(BussinessException ex) {
         this.errors = Arrays.asList(ex.getMessage());
+    }
+
+    public ApiErrors(ResponseStatusException ex) {
+        this.errors = Arrays.asList(ex.getReason());
     }
 
     public List<String> getErrors() {
