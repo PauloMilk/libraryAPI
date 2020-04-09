@@ -3,14 +3,13 @@ package com.paulo.libraryapi.service;
 
 import com.paulo.libraryapi.exception.BussinessException;
 import com.paulo.libraryapi.model.entity.Book;
-import com.paulo.libraryapi.repository.BookRepository;
+import com.paulo.libraryapi.model.repository.BookRepository;
 import com.paulo.libraryapi.service.impl.BookServiceImpl;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Example;
@@ -24,6 +23,8 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -67,7 +68,7 @@ public class BookServiceTest {
                 .isInstanceOf(BussinessException.class)
                 .hasMessage("Isbn já cadastrado.");
 
-            Mockito.verify(repository, Mockito.never()).save(book);
+            verify(repository, Mockito.never()).save(book);
 
 
     }
@@ -109,7 +110,7 @@ public class BookServiceTest {
         book.setId(1l);
         service.delete(book);
 
-        Mockito.verify(repository, Mockito.times(1)).delete(book);
+        verify(repository, times(1)).delete(book);
     }
 
     @Test
@@ -121,7 +122,7 @@ public class BookServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Book id cant be null.");
 
-        Mockito.verify(repository, Mockito.never()).delete(book);
+        verify(repository, Mockito.never()).delete(book);
     }
 
     @Test
@@ -131,7 +132,7 @@ public class BookServiceTest {
         book.setId(1l);
         service.update(book);
 
-        Mockito.verify(repository, Mockito.times(1)).save(book);
+        verify(repository, times(1)).save(book);
     }
 
     @Test
@@ -143,7 +144,7 @@ public class BookServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Book id cant be null.");
 
-        Mockito.verify(repository, Mockito.never()).save(book);
+        verify(repository, Mockito.never()).save(book);
     }
 
     @Test
@@ -160,6 +161,25 @@ public class BookServiceTest {
         assertThat(result.getPageable().getPageNumber()).isEqualTo(0);
         assertThat(result.getPageable().getPageSize()).isEqualTo(10);
 
+    }
+
+    @Test
+    @DisplayName("Deve obter um livro peli isbn.")
+    public void getBookByIsbnTest() {
+        String isbn = "123";
+        Book book = createValidBook();
+        book.setIsbn(isbn);
+        book.setId(1l);
+        Mockito.when(repository.findByIsbn(isbn)).thenReturn(Optional.of(book));
+        Optional<Book> bookSearch = service.getBookByIsbn(isbn);
+
+        assertThat(bookSearch.isPresent()).isTrue();
+        assertThat(bookSearch.get().getId()).isEqualTo(book.getId());
+        assertThat(bookSearch.get().getTitle()).isEqualTo(book.getTitle());
+        assertThat(bookSearch.get().getAuthor()).isEqualTo(book.getAuthor());
+        assertThat(bookSearch.get().getIsbn()).isEqualTo(book.getIsbn());
+
+        verify(repository, times(1)).findByIsbn(isbn);
     }
 
     private Book createValidBook() {

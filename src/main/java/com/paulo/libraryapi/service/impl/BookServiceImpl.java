@@ -1,7 +1,7 @@
 package com.paulo.libraryapi.service.impl;
 
 import com.paulo.libraryapi.exception.BussinessException;
-import com.paulo.libraryapi.repository.BookRepository;
+import com.paulo.libraryapi.model.repository.BookRepository;
 import com.paulo.libraryapi.service.BookService;
 import com.paulo.libraryapi.model.entity.Book;
 import org.springframework.data.domain.Example;
@@ -65,7 +65,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Optional<Book> getBookByIsbn(String isbn) {
-        return Optional.empty();
+        return repository.findByIsbn(isbn);
     }
 
 }
