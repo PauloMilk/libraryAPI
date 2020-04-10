@@ -277,7 +277,7 @@ public class BookControllerTest {
                 .willReturn(new PageImpl<Loan>(Arrays.asList(loan), PageRequest.of(0,100), 1) );
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-                .get(BOOK_API.concat("/1/loans"))
+                .get(BOOK_API.concat("/1/loans?page=0&size=100"))
                 .accept(MediaType.APPLICATION_JSON);
 
         mvc.perform(request)

@@ -14,7 +14,7 @@ import java.util.List;
 public class EmailServiceImpl implements EmailService {
 
     @Value("${application.mail.default-remetent}")
-    private String remetent;
+    private  String remetent;
 
     private final JavaMailSender javaMailSender;
 

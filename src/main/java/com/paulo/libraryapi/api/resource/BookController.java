@@ -90,11 +90,10 @@ public class BookController {
         Page<Loan> result = loanService.getLoansByBook(book, pageRequest);
         List<LoanDTO> list = result.getContent().stream()
                 .map( entity -> {
-                    Book book1 = entity.getBook();
-                    BookDTO bookDTO = modelMapper.map(book1, BookDTO.class);
+                    BookDTO bookDTO = modelMapper.map(book, BookDTO.class);
                     LoanDTO loanDTO = modelMapper.map(entity, LoanDTO.class);
                     loanDTO.setBook(bookDTO);
-                    return  loanDTO;
+                    return loanDTO;
                 })
                 .collect(Collectors.toList());
 

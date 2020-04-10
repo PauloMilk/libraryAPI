@@ -20,18 +20,6 @@ import java.util.List;
 @EnableScheduling
 public class LibraryApiApplication {
 
-	@Autowired
-	EmailService emailService;
-
-	@Bean
-	public CommandLineRunner commandLineRunner() {
-		return args -> {
-
-			List<String> mail = Arrays.asList("af77633a6f-72d298@inbox.mailtrap.io");
-			emailService.sendMails(mail, "Testando Serviço");
-		};
-	}
-
 	@Bean
 	public ModelMapper modelMapper() {
 		return new ModelMapper();

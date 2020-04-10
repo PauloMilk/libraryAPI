@@ -24,7 +24,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public Book save(Book book) {
         if(repository.existsByIsbn(book.getIsbn())) {
-            throw  new BussinessException("Isbn já cadastrado.");
+            throw new BussinessException("Isbn já cadastrado.");
         }
         return repository.save(book);
     }
